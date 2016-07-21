@@ -1,0 +1,1 @@
+kubectl -s http://localhost:8080 run nginx --image=nginx --port=80
