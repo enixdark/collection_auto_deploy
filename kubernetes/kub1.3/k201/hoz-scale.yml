@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: php-apache
+  labels:
+    app: php-apache-app
+spec:
+  template:
+    metadata:
+      labels:
+        app: php-apache-app
+    spec:
+      containers:
+        - name: php-apache
+          image: gcr.io/google_containers/hpa-example
+          ports:
+          - containerPort: 80
+          resources:
+            limits:
+              cpu: 200m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi

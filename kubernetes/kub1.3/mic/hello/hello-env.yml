@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-world
+  labels:
+    app: helloApp
+spec:
+  restartPolicy: Never
+  containers:
+    - name: hello
+      image: ubuntu
+      ports:
+        - containerPort: 8020
+      env:
+        - name: "MESSAGE1"
+          value: "hello"
+        - name: "MESSAGE2"
+          value: "kubernetes"
+      command: ["/bin/echo"]
+      args: ["$(MESSAGE1)", "$(MESSAGE2)"]

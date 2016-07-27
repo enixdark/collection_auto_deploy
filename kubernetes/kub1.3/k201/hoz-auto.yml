@@ -1,0 +1,5 @@
+versionApi: v1:
+metadata:
+  name: php-apache
+  labels:
+    app: php-apache-app
