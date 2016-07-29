@@ -1,0 +1,27 @@
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: mysql
+#   # labels:
+#     # type: database
+# spec:
+#   capacity:
+#     storage: 2Gi
+#   accessModes:
+#     - "ReadWriteOnce"
+#   # persistentVolumeReclaimPolicy: Retain
+#   HostPath:
+#     path: "/tmp/mysql"
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: "mysql"
+  namespace: mailship
+spec:
+  capacity:
+    storage: "2Gi"
+  accessModes:
+    - "ReadWriteOnce"
+  persistentVolumeReclaimPolicy: "Retain"
+  hostPath:
+    path: "/tmp/mysql"

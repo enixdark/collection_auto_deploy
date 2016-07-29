@@ -10,9 +10,9 @@ spec:
   - port: 80
     protocol: TCP
     name: http
-  - port: 443
-    protocol: TCP
-    name: https
+  # - port: 443
+  #   protocol: TCP
+  #   name: https
   selector:
     app: nginx
   # type: LoadBalancer
@@ -30,16 +30,16 @@ spec:
       labels:
         app: nginx
     spec:
-      volumes:
-      - name: secret-volume
-        secret:
-          secretName: nginxsecret
+      # volumes:
+      # - name: secret-volume
+      #   secret:
+      #     secretName: nginxsecret
       containers:
       - name: nginxhttps
         image: nginx #bprashanth/nginxhttps:1.0
         ports:
-        - containerPort: 443
+        # - containerPort: 443
         - containerPort: 80
-        volumeMounts:
-        - mountPath: /etc/nginx/ssl
-          name: secret-volume
+        # volumeMounts:
+        # - mountPath: /etc/nginx/ssl
+        #   name: secret-volume
