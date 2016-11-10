@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{elk['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: elasticsearch
+      port: {{elk['elasticsearch_port']}}
+    - name: logstash
+      port: {{elk['logstash_port']}}
+    - name: kibana
+      port: {{elk['kibana_port']}}
+    - name: beat
+      port: {{elk['beat_port']}}
+  externalIPs:
+    - {{elk['host']}}
+  selector:
+    app: {{elk['name']}}
+

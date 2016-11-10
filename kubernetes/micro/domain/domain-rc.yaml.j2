@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{domain['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{domain['replicas_number']}}
+  selector:
+      app: {{domain['name']}}
+  template:
+    metadata:
+      labels:
+          app: {{domain['name']}}
+    spec:
+      containers:
+        - name: {{domain['name']}}
+          image: docker-registry.vccloud.vn/lamdt/ms-domain-service
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:{{kong['admin_api_port']}}"
+          - name: DATABASE_URL
+            value: "mysql2://{{mysql['user']}}:{{mysql['password']}}@{{mysql['name']}}.{{namespace}}.svc.{{domain}}/{{domain['database']}}"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{domain['name']}}.{{namespace}}.svc.{{domain}}:{{domain['port']}}"
+          ports:
+          - containerPort: {{domain['port']}}
+            name: domain-service
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

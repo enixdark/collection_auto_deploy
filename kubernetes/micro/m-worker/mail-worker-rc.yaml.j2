@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    type: worker
+  name: {{m_worker['name']}}
+  namespace: {{namespace}}
+spec:
+  replicas: {{m_worker['replicas_number']}}
+  selector:
+    app: {{m_worker['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{m_worker['name']}}
+    spec:
+      containers:
+      - env:
+        - name: RABBITMQ_URI
+          value: amqp://{{rabbit_user}}:{{rabbit_password}}@{{rabbitmq['name']}}.{{namespace}}.svc.{{domain}}:{{rabbitmq['port']}}
+        - name: RABBITMQ_PREPROCESSOR_QUEUE_NAME
+          value: {{m_worker['preprocessor_queue']}}
+        - name: RABBITMQ_SENDER_QUEUE_NAME
+          value: {{m_worker['sender_queue']}}
+        - name: SMTP_HOST
+          value: postfix.{{namespace}}.svc.{{domain}}
+        - name: SMTP_POST
+          value: {{m_worker['smtp_port']}}
+        - name: SMTP_USER
+          value: {{m_worker['smtp_user']}}
+        - name: SMTP_PASS
+          value: {{m_worker['smtp_password']}}
+        image: mail-worker
+        name: {{m_worker['name']}}
+      imagePullSecrets:
+      - name: {{docker_registry_key}}

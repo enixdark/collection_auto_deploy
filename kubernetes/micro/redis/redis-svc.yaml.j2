@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{redis['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{redis['name']}}
+      port: {{redis['port']}}
+  externalIPs:
+    - {{redis['host']}}
+  selector:
+    app: {{redis['name']}}
+

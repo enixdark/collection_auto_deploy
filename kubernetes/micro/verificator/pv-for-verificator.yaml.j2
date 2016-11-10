@@ -1,0 +1,16 @@
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: {{verificator['pv_name']}}
+  namespace: {{namespace}}
+spec:
+  capacity:
+    storage: {{verificator['storage']}} 
+  accessModes:
+    {% for mode in verificator['pv_accessModes'] %}
+      - {{ mode }}
+    {% endfor %}
+  persistentVolumeReclaimPolicy: {{verificator['persistentVolumeReclaimPolicy']}}
+  hostPath:
+    path: {{verificator['pv_path']}}
+ 

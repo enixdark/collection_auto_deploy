@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{logstash['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{logstash['replicas_number']}}
+  selector:
+    app: {{logstash['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{logstash['name']}}
+    spec:
+      containers:
+        - name: logstash
+          image: "logstash"
+          command: ["/bin/sh","-c"]
+          args: ["./opt/run.sh"]
+          env:
+            - name: LS_HEAP_SIZE
+              value: {{logstash['heap_size']}}
+            - name: LOGSTASH_PORT
+              value: "{{logstash['port']}}"
+            - name: RABBITMQ_HOST
+              value: {{rabbitmq['name']}}.{{namespace}}.svc.{{domain}}
+            - name: RABBITMQ_PORT
+              value: "{{rabbitmq['port']}}"
+            - name: RABBITMQ_USER
+              value: {{rabbitmq['user']}}
+            - name: RABBITMQ_PASS
+              value: {{rabbitmq['pass']}}
+            - name: RABBITMQ_EXCHANGE
+              value: {{rabbitmq['logstash']['exchange']}}
+            - name: RABBITMQ_EXCHANGE_TYPE
+              value: {{rabbitmq['logstash']['exchange_type']}}
+          ports:
+            - containerPort: {{logstash['port']}}
+              name: logstash
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

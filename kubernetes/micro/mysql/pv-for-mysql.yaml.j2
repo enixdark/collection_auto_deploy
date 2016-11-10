@@ -1,0 +1,20 @@
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: {{mysql['pv_name']}}
+  namespace: {{namespace}}
+spec:
+  capacity:
+    storage: {{mysql['storage']}} 
+    #"2Gi"
+  accessModes:
+    {% for mode in mysql['pv_accessModes'] %}
+      - {{ mode }}
+    {% endfor %}
+  persistentVolumeReclaimPolicy: {{mysql['persistentVolumeReclaimPolicy']}}
+  hostPath:
+    path: {{mysql['pv_path']}}
+  # only Retain and Delete is valid with Cinder volume , uncomment if your server install cinder
+  # cinder:
+  #   fsType: "ext4"
+  #   volumeID: "6f4a272c-925d-4d6c-bacd-065b5981b55a"

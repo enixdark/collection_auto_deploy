@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{redis['name']}}
+  labels:
+    type: database
+  namespace: {{namespace}}
+spec:
+  replicas: {{redis['replicas_number']}}
+  selector:
+    app: {{redis['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{redis['name']}}
+    spec:
+      containers:
+        - name: {{redis['name']}}
+          image: redis
+          env:
+            - name: REDIS_PASSWORD
+              value: {{redis['pass']}}
+          ports:
+            - containerPort: {{redis['port']}}
+              name: {{redis['name']}}
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

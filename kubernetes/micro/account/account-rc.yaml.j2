@@ -1,0 +1,32 @@
+2apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{account['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{account['replicas_number']}}
+  selector:
+      app: {{account['name']}}
+  template:
+    metadata:
+      labels:
+          app: {{account['name']}}
+    spec:
+      containers:
+        - name: {{account['name']}}
+          image: account
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:kong['admin_api_port']}}"
+          - name: DATABASE_URL
+            value: "mysql2://{{mysql['user']}}:{{mysql['pass']}}@{{mysql['name']}}.{{namespace}}.svc.{{domain}}/{{account['database']}}"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{account['name']}}.{{namespace}}.svc.{{domain}}:{{account['port']}}"
+          ports:
+          - containerPort: {{account['port']}}
+            name: account-service
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

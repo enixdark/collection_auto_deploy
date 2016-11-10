@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{kong['name']}}
+  labels:
+    app: {{kong['name']}}
+  namespace: {{namespace}}
+spec:
+  replicas: {{kong['replicas_number']}}
+  selector:
+    app: {{kong['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{kong['name']}}
+    spec:
+      containers:
+        - name: {{kong['name']}}
+          env:
+            - name: DATABASE
+              value: {{kong['database_type']}}
+            - name: kong_hostname
+              value: {{postgres['name']}}.{{namespace}}.svc.{{domain}}
+            - name: kong_port
+              value: "{{postgres['port']}}"
+            - name: kong_user
+              value: {{kong['user']}}
+            - name: kong_pass
+              value: {{kong['password']}}
+            - name: kong_database
+              value: {{postgres['database']}}
+          image: kong:0.8.3
+          command: 
+            - "/bin/sh"
+            - "-c"
+          args: 
+            - "./setup.sh && cat /etc/kong/kong.yml && kong start"
+          ports:
+            - containerPort: {{kong['default_api_port']}}
+              name: proxy
+            - containerPort: {{kong['default_ssl_api_port']}}
+              name: proxy-ssl
+            - containerPort: {{kong['admin_api_port']}}
+              name: admin-api
+            - containerPort: {{kong['cluster_port']}}
+              name: cluster
+            - containerPort: {{kong['cluster_port']}}
+              name: cluster-udp
+              protocol: "UDP"
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

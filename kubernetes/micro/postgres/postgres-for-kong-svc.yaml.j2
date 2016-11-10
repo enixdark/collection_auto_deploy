@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{postgres['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{postgres['name']}}
+      port: {{postgres['port']}}
+  externalIPs:
+    - {{postgres['host']}}
+  selector:
+    name: {{postgres['name']}}
+

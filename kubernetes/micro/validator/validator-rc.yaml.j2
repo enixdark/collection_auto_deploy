@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{validator['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{validator['replicas_number']}}
+  selector:
+    app: {{validator['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{validator['name']}}
+    spec:
+      containers:
+        - name: {{validator['name']}}
+          image: validator
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:kong['admin_api_port']}}"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{validator['name']}}.{{namespace}}.svc.{{domain}}:{{validator['port']}}"
+          ports:
+          - containerPort: {{validator['port']}}
+            name: validator
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

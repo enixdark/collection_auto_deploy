@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{validator['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{validator['name']}}
+      port: {{validator['port']}}
+  externalIPs:
+    -  {{validator['host']}}
+  selector:
+    app:  {{validator['name']}}
+

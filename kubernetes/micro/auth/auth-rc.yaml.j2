@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{auth['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{auth['replicas_number']}}
+  selector:
+      app: {{auth['name']}}
+  template:
+    metadata:
+      labels:
+          app: {{auth['name']}}
+    spec:
+      containers:
+        - name: {{auth['name']}}
+          image: auth
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:{{kong['admin_api_port']}}"
+          - name: KONG_KEY_AUTH
+            value: "false"
+          - name: DATABASE_URL
+            value: "mysql2://{{mysql['user']}}:{{mysql['password']}}@{{mysql['name']}}.{{namespace}}.svc.{{domain}}/{{auth['database']}}"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{auth['name']}}.{{namespace}}.svc.{{domain}}:{{auth['port']}}"
+          ports:
+          - containerPort: {{auth['port']}}
+            name: auth-service
+          # args:
+          #   - bin/bundle install
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #     - ls
+          #   initialDelaySeconds: 1
+          #   timeoutSeconds: 20
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

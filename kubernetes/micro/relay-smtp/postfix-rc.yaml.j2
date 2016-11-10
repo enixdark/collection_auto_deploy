@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{postfix['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{postfix['replicas_number']}}
+  selector:
+    app: {{postfix['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{postfix['name']}}
+    spec:
+      containers:
+        - name: {{postfix['name']}}
+          image: "relay-smtp"
+          command: ["/bin/sh","-c"]
+          args: ["/opt/relay/start.sh"]
+          env:
+            - name: LOGSTASH_HOST
+              value: {{logstash['name']}}.{{namespace}}.svc.{{domain}}
+            - name: LOGSTASH_PORT
+              value: "{{ logstash['port'] }}"
+            - name: LIST_IPS
+              value: {{ postfix['list_ips'] }}
+            - name: SIGN_ENV
+              value: $
+            - name: MYHOSTNAME
+              value: {{postfix['myhostname']}}
+            - name: DOMAIN
+              value: {{postfix['domain']}}
+            - name: SMTPD_TLS_CERT_FILE
+              value: {{postfix['cert_file']}}
+            - name: SMTPD_TLS_KEY_FILE
+              value: {{postfix['key_file']}}
+            - name: M_WORKER_IP
+              value: {{m_worker['name']}}.{{namespace}}.svc.{{domain}}
+          ports:
+            - containerPort: {{postfix['smtp_port']}}
+              name: smtp
+            - containerPort: {{postfix['smtp_tls_port']}}
+              name: smtptls
+      imagePullSecrets:
+        - name: {{docker_registry_key}}

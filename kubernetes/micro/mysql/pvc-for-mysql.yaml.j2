@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{mysql['pvc_name']}}
+  namespace: {{namespace}}
+spec:
+  accessModes:
+    {% for mode in mysql['pvc_accessModes'] %}
+    - {{mode}}
+    {% endfor %}
+  resources:
+    requests:
+      storage: {{mysql['storage']}}
+

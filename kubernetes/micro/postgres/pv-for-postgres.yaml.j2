@@ -1,0 +1,19 @@
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: {{postgres['pv_name']}}
+  namespace: {{namespace}}
+spec:
+  capacity:
+    storage: {{postgres['storage']}}
+  accessModes:
+    {% for mode in postgres['pv_accessModes'] %}
+      - {{ mode }}
+    {% endfor %}
+  persistentVolumeReclaimPolicy: {{postgres['persistentVolumeReclaimPolicy']}}
+  hostPath:
+    path: {{postgres['pv_path']}}
+  # # only Retain and Delete is valid with Cinder volume
+  # cinder:
+  #   fsType: "ext4"ba
+  #   volumeID: "b69e54e7-1a9c-40e8-ab8f-73270fdf8097"

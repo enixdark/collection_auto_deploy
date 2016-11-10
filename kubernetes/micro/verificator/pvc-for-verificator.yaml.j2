@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{verificator['pvc_name']}}
+  namespace: {{namespace}}
+spec:
+  accessModes:
+    {% for mode in verificator['pvc_accessModes'] %}
+    - {{mode}}
+    {% endfor %}
+  resources:
+    requests:
+      storage: {{verificator['storage']}}
+

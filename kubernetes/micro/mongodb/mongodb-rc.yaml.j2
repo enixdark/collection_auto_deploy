@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{mongodb['name']}}
+  labels:
+    type: database
+  namespace: {{namespace}}
+spec:
+  replicas: {{mongodb['replicas_number']}}
+  selector:
+    app: {{mongodb['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{mongodb['name']}}
+    spec:
+      containers:
+        - name: {{mongodb['name']}}
+          image: mongodb
+          env:
+            - name: MONGODB_USER
+              value: {{mongodb['user']}}
+            - name: MONGODB_PASS
+              value: {{mongodb['password']}}
+            - name: MONGODB_DATABASE
+              value: {{mongodb['database']}}
+          ports:
+            - containerPort: {{mongodb['port']}}
+              name: {{mongodb['name']}}
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

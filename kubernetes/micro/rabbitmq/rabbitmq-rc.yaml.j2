@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{rabbitmq['name']}}
+  labels:
+    type: queue
+  namespace: {{namespace}}
+spec:
+  replicas: {{rabbitmq['replicas_number']}}
+  selector:
+    app: {{rabbitmq['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{ rabbitmq['name']}}
+    spec:
+      containers:
+        - name: {{rabbitmq['name']}}
+          image: rabbitmq:3
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: {{rabbitmq['user']}}
+            - name: RABBITMQ_DEFAULT_PASS
+              value: {{rabbitmq['pass']}}
+          ports:
+            - containerPort: {{rabbitmq['port']}}
+              name: {{rabbitmq['name']}}
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

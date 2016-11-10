@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{postfix_log_worker['name']}}
+  labels:
+    type: worker
+  namespace: {{namespace}}
+spec:
+  replicas: {{postfix_log_worker['replicas_number']}}
+  selector:
+    app: {{postfix_log_worker['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{postfix_log_worker['name']}}
+    spec:
+      containers:
+        - name: {{postfix_log_worker['name']}}
+          image: postfix-log-worker
+          env:
+            - name: RABBITMQ_URI
+              value: "amqp://{{rabbitmq['user']}}:{{rabbitmq['password']}}@{{rabbitmq['name']}}.{{namespace}}.svc.{{domain}}:{{rabbitmq['port']}}"
+            - name: ELASTICSEARCH_URI
+              value: "{{elk['name']}}.{{namespace}}.svc.{{domain}}:{{elk['elasticsearch_port']}}"
+            - name: MONGODB_URI
+              value: "{{mongodb['name']}}.{{namespace}}.svc.{{domain}}:{{mongodb['port']}}"
+            - name: MONGODB_DATABASE
+              value: {{mongodb['database']}}
+            - name: MONGODB_USER
+              value: {{mongodb['user']}}
+            - name: MONGODB_PASSWORD
+              value: {{mongodb['password']}}
+            - name: ENGINE_STORAGE
+              value: {{engine_storage}}
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

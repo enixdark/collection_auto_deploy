@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{email['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{email['name']}}
+      port: {{email['port']}}
+  externalIPs:
+    -  {{email['host']}}
+  selector:
+    app:  {{email['name']}}
+

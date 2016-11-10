@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{postgres['name']}}
+  labels:
+    type: database
+  namespace: {{namespace}}
+spec:
+  replicas: {{postgres['replicas_number']}}
+  selector:
+    name: {{postgres['name']}}
+  template:
+    metadata:
+      labels:
+        name: {{postgres['name']}}
+    spec:
+      containers:
+        - name: {{postgres['name']}}
+          image: postgres:9.4
+          env:
+            - name: POSTGRES_USER
+              value: {{postgres['user']}}
+            - name: POSTGRES_PASSWORD
+              value: {{postgres['password']}}
+            - name: POSTGRES_DB
+              value: {{postgres['database']}}
+          ports:
+            - containerPort: {{postgres['port']}}
+              name: {{postgres['name']}}
+
+          volumeMounts:
+            - mountPath: {{postgres['mountPath']}}
+              name: {{postgres['name']}}
+
+      volumes:
+        - name: {{postgres['name']}}
+          persistentVolumeClaim:
+            claimName: {{postgres['pvc_name']}}
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

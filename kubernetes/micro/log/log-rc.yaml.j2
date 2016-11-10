@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{log['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{log['replicas_number']}}
+  selector:
+      app: {{log['name']}}
+  template:
+    metadata:
+      labels:
+          app: {{log['name']}}
+    spec:
+      containers:
+        - name: {{log['name']}}
+          image: docker-registry.vccloud.vn/lamdt/ms-log-service
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:{{kong['admin_api_port']}}"
+          - name: ELASTICSEARCH_HOST
+            value: "http://{{elk['name']}}.{{namespace}}.svc.{{domain}}:{{elk['elasticsearch_port']}}"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{log['name']}}.{{namespace}}.svc.{{domain}}:{{log['port']}}"
+          ports:
+          - containerPort: {{log['port']}}
+            name: log-service
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

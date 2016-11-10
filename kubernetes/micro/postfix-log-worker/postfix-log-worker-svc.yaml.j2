@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{postfix_log_worker['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{postfix_log_worker['name']}}
+      port: {{postfix_log_worker['port']}}
+  externalIPs:
+    - {{postfix_log_worker['host']}}
+  selector:
+    app: {{postfix_log_worker['name']}}
+

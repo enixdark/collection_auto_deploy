@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{email['name']}}
+  labels:
+    type: service
+  namespace: {{namespace}}
+spec:
+  replicas: {{email['replicas_number']}}
+  selector:
+    app: {{email['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{email['name']}}
+    spec:
+      containers:
+        - name: {{email['name']}}
+          image: email
+          env:
+          - name: KONG_ENDPOINT
+            value: "http://{{kong['name']}}.{{namespace}}.svc.{{domain}}:8001"
+          - name: DATABASE_URL
+            value: "mysql2://{{mysql['user']}}:{{mysql['password']}}@{{mysql['name']}}.{{namespace}}.svc.{{domain}}/email-service"
+          - name: KONG_API_UPSTREAM_URL
+            value: "http://{{email['name']}}.{{namespace}}.svc.{{domain}}:{{email['port']}}"
+          - name: RABBITMQ_CONNECTION_STRING
+            value: "amqp://{{rabbitmq['user']}}:{{rabbitmq['password']}}@{{rabbitmq['password']}}.{{namespace}}.svc.{{domain}}:{{rabbitmq['port']}}"
+          - name: RABBITMQ_PREPROCESSOR_QUEUE
+            value: {{m_worker['preprocessor_queue']}}
+          - name: RABBITMQ_SENDER_QUEUE
+            value: {{m_worker['sender_queue']}}
+          - name: REDIS_HOST
+            value: "http://{{redis['name']}}.{{namespace}}.svc.{{domain}}"
+          - name: REDIS_PORT
+            value: "{{redis['port']}}"
+          - name: REDIS_PASSWORD
+            value: {{redis['pass']}}
+          ports:
+          - containerPort: {{email['port']}}
+            name: email-service
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

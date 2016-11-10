@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{mysql['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{mysql['name']}}
+      port: {{mysql['port']}}
+  externalIPs:
+    - {{mysql['host']}}
+  selector:
+    app: {{mysql['name']}}
+

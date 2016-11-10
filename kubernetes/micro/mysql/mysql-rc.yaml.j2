@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: {{mysql['name']}}
+  labels:
+    type: database
+  namespace: {{namespace}}
+spec:
+  replicas: {{mysql['replicas_number']}}
+  selector:
+    app: {{mysql['name']}}
+  template:
+    metadata:
+      labels:
+        app: {{mysql['name']}}
+    spec:
+      containers:
+        - name: {{mysql['name']}}
+          image: "mysql-server:5.7.12"
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{mysql['pass']}}
+          ports:
+            - containerPort: {{mysql['port']}}
+              name: {{mysql['name']}}
+          volumeMounts:
+            - mountPath: {{mysql['mountPath']}} #"/var/lib/mysql"
+              name:  {{mysql['volumeName']}} #db-dir
+      volumes:
+        - name: {{mysql['volumeName']}} #db-dir
+          persistentVolumeClaim:
+            claimName: {{mysql['pvc_name']}}  #"mysql-pvc"
+      imagePullSecrets:
+        - name: {{docker_registry_key}}
+

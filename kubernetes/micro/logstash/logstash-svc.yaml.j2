@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{logstash['name']}}
+  namespace: {{namespace}}
+spec:
+  ports:
+    - name: {{logstash['name']}}
+      port: {{logstash['port']}}
+  externalIPs:
+    - {{logstash['host']}}
+  selector:
+    app: {{logstash['name']}}
+

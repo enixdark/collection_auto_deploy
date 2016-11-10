@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{postgres['pvc_name']}}
+  namespace: {{namespace}}
+spec:
+  accessModes:
+    {% for mode in postgres['pv_accessModes'] %}
+      - {{ mode }}
+    {% endfor %}
+  resources:
+    requests:
+      storage: {{postgres['storage']}}
+
