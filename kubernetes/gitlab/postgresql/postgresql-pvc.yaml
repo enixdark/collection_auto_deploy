@@ -1,0 +1,10 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gitlab-postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi

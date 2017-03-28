@@ -1,0 +1,33 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gitlab-rails
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gitlab-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gitlab-registry
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi

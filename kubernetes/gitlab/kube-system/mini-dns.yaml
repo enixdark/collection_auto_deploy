@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "KubeDNS"
+spec:
+  replicas: 1
+  selector:
+    k8s-app: kube-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-dns
+        # version: xx
+        kubernetes.io/cluster-service: "true"
+    spec:
+      dnsPolicy: Default
+      containers:
+      - args:
+        # - --domain=cluster.local.
+        - --domain=cluster.local
+        - --dns-port=10053
+        image: gcr.io/google_containers/kubedns-amd64:1.8
+        imagePullPolicy: IfNotPresent
+        # livenessProbe:
+        #   failureThreshold: 5
+        #   httpGet:
+        #     path: /healthz-kubedns
+        #     port: 8080
+        #     scheme: HTTP
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 5
+        name: kubedns
+        ports:
+        - containerPort: 10053
+          name: dns-local
+          protocol: UDP
+        - containerPort: 10053
+          name: dns-tcp-local
+          protocol: TCP
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /readiness
+        #     port: 8081
+        #     scheme: HTTP
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 5
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        # terminationMessagePath: /dev/termination-log
+        # volumeMounts:
+        # - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        #   name: default-token
+        #   readOnly: true
+      - args:
+        - --cache-size=1000
+        - --no-resolv
+        - --server=127.0.0.1#10053
+        - --log-facility=-
+        image: gcr.io/google_containers/kube-dnsmasq-amd64:1.4
+        imagePullPolicy: IfNotPresent
+        # livenessProbe:
+        #   failureThreshold: 5
+        #   httpGet:
+        #     path: /healthz-dnsmasq
+        #     port: 8080
+        #     scheme: HTTP
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 5
+        name: dnsmasq
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        resources: {}
+        # terminationMessagePath: /dev/termination-log
+        # volumeMounts:
+        # - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        #   name: default-token
+        #   readOnly: true
+      - args:
+        - --cmd=nslookup kubernetes.default.svc.cluster.local 127.0.0.1 >/dev/null
+        - --url=/healthz-dnsmasq
+        - --cmd=nslookup kubernetes.default.svc.cluster.local 127.0.0.1:10053 >/dev/null
+        - --url=/healthz-kubedns
+        - --port=8080
+        - --quiet
+        image: gcr.io/google_containers/exechealthz-amd64:1.2
+        imagePullPolicy: IfNotPresent
+        name: healthz
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            memory: 50Mi
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        # terminationMessagePath: /dev/termination-log
+        # volumeMounts:
+        # - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        #   name: default-token
+        #   readOnly: true
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: KubeDNS
+  name: kube-dns
+  namespace: kube-system
+spec:
+  clusterIP: 10.0.0.10
+  ports:
+  - name: dns
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: 53
+  selector:
+    k8s-app: kube-dns
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

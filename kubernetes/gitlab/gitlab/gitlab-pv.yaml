@@ -1,0 +1,39 @@
+---
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: gitlab-rails
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /srv/gitlab-rails 
+---
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: gitlab-storage
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /srv/gitlab-storage
+---
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: gitlab-registry
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /srv/gitlab-registry

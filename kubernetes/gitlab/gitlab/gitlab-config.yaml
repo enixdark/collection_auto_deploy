@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-config
+  # namespace: gitlab
+data:
+  external_scheme: http
+  external_hostname: gitlab.default.svc.cluster.local
+  registry_external_scheme: http
+  registry_external_hostname: registry.gitlab.default.svc.cluster.local
+  mattermost_external_scheme: http
+  mattermost_external_hostname: mattermost.gitlab.default.svc.cluster.local
+  mattermost_app_uid: aadas
+  postgres_user: gitlab
+  postgres_db: gitlab_production
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-secrets
+  # namespace: gitlab
+data:
+  postgres_password: NDl1ZjNtenMxcWR6NXZnbw==
+  initial_shared_runners_registration_token: NDl1ZjNtenMxcWR6NXZnbw==
+  mattermost_app_secret: NDl1ZjNtenMxcWR6NXZnbw==

@@ -1,0 +1,205 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gitlab
+  # namespace: gitlab
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: gitlab
+        app: gitlab
+    spec:
+      containers:
+      - name: gitlab
+        image: gitlab/gitlab-ce:9.0.0-ce.0
+        # image: sameersbn/gitlab:8.17.4
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+          seLinuxOptions:
+            level: "s0:c123,c456"
+        resources:
+          requests:
+            memory: "4084Mi"
+            cpu: "2"
+          limits:
+            memory: "4084Mi"
+            cpu: "2"
+        command: ["/bin/bash", "-c",
+          "sed -i \"s/environment ({'GITLAB_ROOT_PASSWORD' => initial_root_password }) if initial_root_password/environment ({'GITLAB_ROOT_PASSWORD' => initial_root_password, 'GITLAB_SHARED_RUNNERS_REGISTRATION_TOKEN' => node['gitlab']['gitlab-rails']['initial_shared_runners_registration_token'] })/g\" /opt/gitlab/embedded/cookbooks/gitlab/recipes/database_migrations.rb && exec /assets/wrapper"]
+        env:
+        - name: GITLAB_EXTERNAL_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: external_scheme
+        - name: GITLAB_EXTERNAL_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: external_hostname
+        - name: GITLAB_REGISTRY_EXTERNAL_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: registry_external_scheme
+        - name: GITLAB_REGISTRY_EXTERNAL_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: registry_external_hostname
+        - name: GITLAB_MATTERMOST_EXTERNAL_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: mattermost_external_scheme
+        - name: GITLAB_MATTERMOST_EXTERNAL_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: mattermost_external_hostname
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: postgres_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-secrets
+              key: postgres_password
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: postgres_db
+        - name: GITLAB_INITIAL_SHARED_RUNNERS_REGISTRATION_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-secrets
+              key: initial_shared_runners_registration_token
+        - name: MATTERMOST_APP_UID
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-config
+              key: mattermost_app_uid
+        - name: MATTERMOST_APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-secrets
+              key: mattermost_app_secret
+        - name: GITLAB_OMNIBUS_CONFIG
+          value: |
+            external_url "#{ENV['GITLAB_EXTERNAL_SCHEME']}://#{ENV['GITLAB_EXTERNAL_HOSTNAME']}"
+            registry_external_url "#{ENV['GITLAB_REGISTRY_EXTERNAL_SCHEME']}://#{ENV['GITLAB_REGISTRY_EXTERNAL_HOSTNAME']}"
+            mattermost_external_url "#{ENV['GITLAB_MATTERMOST_EXTERNAL_SCHEME']}://#{ENV['GITLAB_MATTERMOST_EXTERNAL_HOSTNAME']}"
+
+            gitlab_rails['initial_shared_runners_registration_token'] = ENV['GITLAB_INITIAL_SHARED_RUNNERS_REGISTRATION_TOKEN']
+
+            nginx['enable'] = false
+            registry_nginx['enable'] = false
+            mattermost_nginx['enable'] = false
+
+            gitlab_workhorse['listen_network'] = 'tcp'
+            gitlab_workhorse['listen_addr'] = '0.0.0.0:8005'
+
+            mattermost['service_address'] = '0.0.0.0'
+            mattermost['service_port'] = '8065'
+
+            registry['registry_http_addr'] = '0.0.0.0:8105'
+
+            postgresql['enable'] = false
+            gitlab_rails['db_host'] = 'gitlab-postgresql.default.svc.cluster.local'
+            gitlab_rails['db_password'] = ENV['POSTGRES_PASSWORD']
+            gitlab_rails['db_username'] = ENV['POSTGRES_USER']
+            gitlab_rails['db_database'] = ENV['POSTGRES_DB']
+
+            redis['enable'] = false
+            gitlab_rails['redis_host'] = 'gitlab-redis.default.svc.cluster.local'
+
+            mattermost['file_directory'] = '/gitlab-data/mattermost';
+            mattermost['sql_driver_name'] = 'postgres';
+            mattermost['sql_data_source'] = "user=#{ENV['POSTGRES_USER']} host=gitlab-postgresql.default.svc.cluster.local port=5432 dbname=mattermost_production password=#{ENV['POSTGRES_PASSWORD']} sslmode=disable";
+            mattermost['gitlab_enable'] = true;
+            mattermost['gitlab_secret'] = ENV['MATTERMOST_APP_SECRET'];
+            mattermost['gitlab_id'] = ENV['MATTERMOST_APP_UID'];
+            mattermost['gitlab_scope'] = '';
+            mattermost['gitlab_auth_endpoint'] = "#{ENV['GITLAB_EXTERNAL_SCHEME']}://#{ENV['GITLAB_EXTERNAL_HOSTNAME']}/oauth/authorize";
+            mattermost['gitlab_token_endpoint'] = "#{ENV['GITLAB_EXTERNAL_SCHEME']}://#{ENV['GITLAB_EXTERNAL_HOSTNAME']}/oauth/token";
+            mattermost['gitlab_user_api_endpoint'] = "#{ENV['GITLAB_EXTERNAL_SCHEME']}://#{ENV['GITLAB_EXTERNAL_HOSTNAME']}/api/v3/user"
+
+            manage_accounts['enable'] = true
+            manage_storage_directories['manage_etc'] = false
+
+            gitlab_shell['auth_file'] = '/gitlab-data/ssh/authorized_keys'
+            git_data_dir '/gitlab-data/git-data'
+            gitlab_rails['shared_path'] = '/gitlab-data/shared'
+            gitlab_rails['uploads_directory'] = '/gitlab-data/uploads'
+            gitlab_ci['builds_directory'] = '/gitlab-data/builds'
+            gitlab_rails['registry_path'] = '/gitlab-registry'
+            gitlab_rails['trusted_proxies'] = ["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16"]
+
+            prometheus['enable'] = true
+            prometheus['listen_address'] = '0.0.0.0:9090'
+            node_exporter['enable'] = true
+            gitlab_monitor['enable'] = true
+            postgres_exporter['enable'] = true
+            postgres_exporter['env'] = {
+              'DATA_SOURCE_NAME' => "user=#{ENV['POSTGRES_USER']} host=gitlab-postgresql.default.svc.cluster.local port=5432 dbname=#{ENV['POSTGRES_DB']} password=#{ENV['POSTGRES_PASSWORD']} sslmode=disable"
+            }
+            redis_exporter['enable'] = true
+            redis_exporter['flags'] = {
+              'redis.addr' => "gitlab-redis.default.svc.cluster.local:6379",
+            }
+
+        - name: GITLAB_POST_RECONFIGURE_SCRIPT
+          value: |
+            /opt/gitlab/bin/gitlab-rails runner -e production 'Doorkeeper::Application.where(uid: ENV["MATTERMOST_APP_UID"], secret: ENV["MATTERMOST_APP_SECRET"], redirect_uri: "#{ENV["GITLAB_MATTERMOST_EXTERNAL_SCHEME"]}://#{ENV["GITLAB_MATTERMOST_EXTERNAL_HOSTNAME"]}/signup/gitlab/complete\r\n#{ENV["GITLAB_MATTERMOST_EXTERNAL_SCHEME"]}://#{ENV["GITLAB_MATTERMOST_EXTERNAL_HOSTNAME"]}/login/gitlab/complete", name: "GitLab Mattermost").first_or_create;'
+        ports:
+        - name: git 
+          hostPort: 8000
+          containerPort: 8080
+        - name: registry
+          containerPort: 8105
+        - name: mattermost
+          containerPort: 8065
+        - name: workhorse
+          containerPort: 8005
+        - name: ssh
+          containerPort: 22
+        - name: prometheus
+          containerPort: 9090
+        - name: node-exporter
+          containerPort: 9100
+        volumeMounts:
+        - name: gitlab-storage
+          mountPath: /etc/gitlab
+        - name: gitlab-rails
+          mountPath: /gitlab-data
+        - name: gitlab-registry
+          mountPath: /gitlab-registry
+        # livenessProbe:
+        #   httpGet:
+        #     path: /help
+        #     port: 8005
+        #   initialDelaySeconds: 180
+        #   timeoutSeconds: 15
+        # readinessProbe:
+        #   httpGet:
+        #     path: /help
+        #     port: 8005
+        #   initialDelaySeconds: 15
+        #   timeoutSeconds: 1
+      
+      volumes:
+      - name: gitlab-rails
+        persistentVolumeClaim:
+          claimName: gitlab-rails
+      - name: gitlab-registry
+        persistentVolumeClaim:
+          claimName: gitlab-registry
+      - name: gitlab-storage
+        persistentVolumeClaim:
+          claimName: gitlab-storage
