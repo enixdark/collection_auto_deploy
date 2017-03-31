@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: logstash
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: logstash
+    spec:
+      containers:
+      - env:
+        - name: LS_HEAP_SIZE
+          value: 1024m
+        - name: LOGSTASH_PORT
+          value: "5000"
+        - name: ELASTICSEARCH_URI
+          value: elasticsearch:9200
+        - name: ELASTICSEARCH_USERNAME
+          value: elastic
+        - name: ELASTICSEARCH_PASSWORD
+          value: changeme
+        image: cqshinn92/logstash
+        name: logstash
+        ports:
+        - containerPort: 5000
+        - containerPort: 5000
+          protocol: UDP
+        resources: {}
+      restartPolicy: Always
+status: {}

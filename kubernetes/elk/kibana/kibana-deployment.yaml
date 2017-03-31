@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: kibana
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: kibana
+    spec:
+      containers:
+      - env:
+        - name: KIBANA_PORT
+          value: "5601"
+        - name: KIBANA_HOST
+          value: 0.0.0.0
+        - name: ELASTICSEARCH_URI
+          value: http:\/\/elasticsearch:9200
+        - name: ELASTICSEARCH_USERNAME
+          value: elastic
+        - name: ELASTICSEARCH_PASSWORD
+          value: changeme
+        image: cqshinn92/kibana
+        name: kibana
+        ports:
+        - containerPort: 5601
+        resources: {}
+      restartPolicy: Always
+status: {}

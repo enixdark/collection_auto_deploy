@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    service: logstash
+  name: logstash
+spec:
+  selector:
+    name: logstash
+  type: NodePort
+  ports:
+  - name: logstash 
+    port: 5000
+    targetPort: 5000
+  selector:
+    service: logstash
+status:
+  loadBalancer: {}

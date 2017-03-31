@@ -1,0 +1,66 @@
+version: '2'
+services:
+  logstash:
+    container_name: logstash
+    build: ./logstash/
+    # image: cqshinn92/logstash 
+    expose:
+        - "5000"
+    ports:
+        - "5000:5000"
+        - "5000:5000/udp"
+    # volumes:
+    #   - ./logstash:/etc/logstash
+    environment:
+      - LS_HEAP_SIZE=1024m
+      - LOGSTASH_PORT=5000
+      - ELASTICSEARCH_URI=elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic 
+      - ELASTICSEARCH_PASSWORD=changeme
+    links:
+      - elasticsearch
+
+  elasticsearch:
+    # privileged: true
+    container_name: elasticsearch
+    build: ./elasticsearch/
+    # image: cqshinn92/elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      # - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTICSEARCH_USERNAME=elastic 
+      - ELASTICSEARCH_PASSWORD=changeme
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144
+        hard: 262144
+    mem_limit: 1g
+    cap_add:
+      - IPC_LOCK
+    # volumes:
+    #   - /proc/sys/vm:/proc/sys/vm
+    
+  kibana:
+    container_name: kibana
+    build: ./kibana/
+    # image: cqshinn92/kibana
+    # volumes:
+    #   - ./kibana/config/:/etc/kibana/
+    ports:
+      - "5601:5601"
+    environment:
+      - KIBANA_PORT=5601
+      - KIBANA_HOST=0.0.0.0
+      - ELASTICSEARCH_URI=http:\/\/elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic 
+      - ELASTICSEARCH_PASSWORD=changeme
+    depends_on:
+      - elasticsearch
+

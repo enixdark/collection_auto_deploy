@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: elasticsearch
+spec:
+  replicas: 1
+  # strategy:
+  #   type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: elasticsearch
+    spec:
+      containers:
+      - env:
+        # - name: bootstrap.memory_lock
+        #   value: "true"
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        - name: ELASTICSEARCH_USERNAME
+          value: elastic
+        - name: ELASTICSEARCH_PASSWORD
+          value: changeme
+        image: cqshinn92/elasticsearch
+        name: elasticsearch
+        ports:
+        - name: port1 
+          hostPort: 9200
+          containerPort: 9200
+        - name: port2
+          hostPort: 9300
+          containerPort: 9300
+        resources:
+          limits:
+            memory: "1073741824"
+        securityContext:
+          privileged: true
+      #   volumeMounts:
+      #   - mountPath: /proc/sys/vm
+      #     name: elasticsearch
+      #     readOnly: true
+      restartPolicy: Always
+      # volumes:
+      # - name: elasticsearch
+      #   persistentVolumeClaim:
+      #     claimName: elasticsearch
+status: {}
