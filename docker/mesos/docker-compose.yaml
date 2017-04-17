@@ -1,26 +1,48 @@
 version: "3"
 services:
-  zookeeper: 
-    image: vikrammurugesan/zookeeper
+  zookeeper1: 
+    image: zookeeper
     # network_mode: bridge
     ports:
       - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper1:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888  
+  zookeeper2:
+        image: zookeeper
+        restart: always
+        ports:
+          - 2182:2181
+        environment:
+          ZOO_MY_ID: 2
+          ZOO_SERVERS: server.1=zookeeper1:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888
+          # ZOO_TICK_TIME
+          # ZOO_INIT_LIMIT
+          # ZOO_SYNC_LIMIT
+  zookeeper3:
+      image: zookeeper
+      # restart: always
+      ports:
+        - 2183:2181
+      environment:
+        ZOO_MY_ID: 3
+        ZOO_SERVERS: server.1=zookeeper1:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888
   mesos-master:
     image: mesosphere/mesos-master:1.2.0
     # network_mode: bridge
     environment:
-      MESOS_ZK: zk://zookeeper:2181/mesos
+      MESOS_ZK: zk://zookeeper1:2181/mesos
       MESOS_HOSTNAME: 192.168.105.81 # replace with public ip 
     ports:
       - "5050:5050"
       - "5051:5051"
     depends_on:
-      - zookeeper
+      - zookeeper1
   mesos-slave:
     image: mesosphere/mesos-slave:1.2.0
     # network_mode: bridge
     environment:
-      MESOS_MASTER: zk://zookeeper:2181/mesos
+      MESOS_MASTER: zk://zookeeper1:2181/mesos
       MESOS_WORK_DIR: /tmp
       MESOS_CONTAINERIZERS: docker
       MESOS_HOSTNAME: mesos-master # replace with public ip 
@@ -30,5 +52,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
     depends_on:
-      - zookeeper
+      - zookeeper1
       - mesos-master
