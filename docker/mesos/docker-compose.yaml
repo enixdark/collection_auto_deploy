@@ -1,0 +1,34 @@
+version: "3"
+services:
+  zookeeper: 
+    image: vikrammurugesan/zookeeper
+    # network_mode: bridge
+    ports:
+      - "2181:2181"
+  mesos-master:
+    image: mesosphere/mesos-master:1.2.0
+    # network_mode: bridge
+    environment:
+      MESOS_ZK: zk://zookeeper:2181/mesos
+      MESOS_HOSTNAME: 192.168.105.81 # replace with public ip 
+    ports:
+      - "5050:5050"
+      - "5051:5051"
+    depends_on:
+      - zookeeper
+  mesos-slave:
+    image: mesosphere/mesos-slave:1.2.0
+    # network_mode: bridge
+    environment:
+      MESOS_MASTER: zk://zookeeper:2181/mesos
+      MESOS_WORK_DIR: /tmp
+      MESOS_CONTAINERIZERS: docker
+      MESOS_HOSTNAME: mesos-master # replace with public ip 
+      MESOS_PORT: 5051
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    depends_on:
+      - zookeeper
+      - mesos-master
