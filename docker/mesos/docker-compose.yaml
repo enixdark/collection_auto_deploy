@@ -65,17 +65,24 @@ services:
       # - mesos-master
     ports:
       - "8080:8080"
-  # chronos:
-  #   image: mesosphere/chronos
-  #   # command: ./bin/start.sh --zk_hosts $zk_ip:2181 --master zk://$zk_ip:2181/mesos
-  #   environment:
-  #     PORT0: 8080
-  #     PORT1: 8081
-  #     zk_ip: zookeeper1
-  #   depends_on:
-  #     - zookeeper1
-  #     - mesos-master
-  #     - marathon
+  chronos:
+    image: mesosphere/chronos
+    entrypoint:
+      - /chronos/bin/start.sh 
+      - --zk_hosts 
+      - zookeeper1:2181 
+      - --master 
+      - zk://zookeeper1:2181/mesos
+    environment:
+      PORT0: 4040
+      PORT1: 8081
+      zk_ip: zookeeper1
+    ports:
+      - "4040:4040"
+    depends_on:
+      - zookeeper1
+      - mesos-master
+      - marathon
   # mesos-dns
   #   image: mesosphere/mesos-dns:v0.6.0
   #   ports:
