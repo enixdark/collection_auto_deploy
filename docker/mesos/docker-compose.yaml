@@ -10,7 +10,7 @@ services:
       ZOO_SERVERS: server.1=zookeeper1:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888  
   zookeeper2:
         image: zookeeper
-        restart: always
+        # restart: always
         ports:
           - 2182:2181
         environment:
@@ -32,7 +32,7 @@ services:
     # network_mode: bridge
     environment:
       MESOS_ZK: zk://zookeeper1:2181/mesos
-      MESOS_HOSTNAME: 192.168.105.81 # replace with public ip 
+      MESOS_HOSTNAME: mesos-master # replace with public ip 
     ports:
       - "5050:5050"
       - "5051:5051"
@@ -54,3 +54,29 @@ services:
     depends_on:
       - zookeeper1
       - mesos-master
+  marathon:
+    image: mesosphere/marathon
+    privileged: true
+    environment:
+      MARATHON_MASTER: zk://zookeeper1:2181/mesos
+      MARATHON_ZK: zk://zookeeper1:2181/marathon
+    depends_on:
+      - zookeeper1
+      # - mesos-master
+    ports:
+      - "8080:8080"
+  # chronos:
+  #   image: mesosphere/chronos
+  #   # command: ./bin/start.sh --zk_hosts $zk_ip:2181 --master zk://$zk_ip:2181/mesos
+  #   environment:
+  #     PORT0: 8080
+  #     PORT1: 8081
+  #     zk_ip: zookeeper1
+  #   depends_on:
+  #     - zookeeper1
+  #     - mesos-master
+  #     - marathon
+  # mesos-dns
+  #   image: mesosphere/mesos-dns:v0.6.0
+  #   ports:
+  #   - "53:53"
