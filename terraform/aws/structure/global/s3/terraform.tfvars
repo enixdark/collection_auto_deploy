@@ -11,7 +11,7 @@ terragrunt = {
 
     remote_state {
       encrypt = "true"
-      bucket  = "terraform-bucket-s3-sample"
+      bucket  = "terraform-bucket-s3-stage"
       key     = "global/s3/terraform.tfstate"
       region  = "us-east-1"
     }
